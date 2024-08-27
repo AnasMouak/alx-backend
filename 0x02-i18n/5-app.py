@@ -13,6 +13,7 @@ users = {
     4: {"name": "Teletubby", "locale": None, "timezone": "Europe/London"},
 }
 
+
 class Config:
     """Represents a Flask Babel configuration."""
     LANGUAGES = ["en", "fr"]
@@ -34,10 +35,12 @@ def get_user():
         return users.get(user_id)
     return None
 
+
 @app.before_request
 def before_request():
     """find a user if any, and set it as a global on flask.g.user"""
     g.user = get_user()
+
 
 @babel.localeselector
 def get_locale():
