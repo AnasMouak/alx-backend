@@ -1,34 +1,31 @@
-export default function createPushNotificationsJobs(jobs, queue) {
-  // Check if jobs is an array, throw error if not
-  if (!Array.isArray(jobs)) {
-    throw new Error('Jobs is not an array');
-  }
+import kue from 'kue';
 
-  // Loop through each job object in the jobs array
+const createPushNotificationsJobs = (jobs, queue) => {
+  if (!Array.isArray(jobs)) throw new Error('Jobs is not an array');
+
   jobs.forEach((jobData) => {
-    // Create a job in the queue 'push_notification_code_3'
     const job = queue.create('push_notification_code_3', jobData)
       .save((err) => {
         if (!err) {
-          console.log(`Notification job created: ${job.id}`);
+          // In test mode, the job may not have an id
+          if (!queue.testMode) {
+            console.log(`Notification job created: ${job.id}`);
+          } else {
+            console.log('Notification job created');
+          }
         }
       });
 
-    // Add event listeners for job events
-
-    // Job completion event
-    job.on('complete', () => {
-      console.log(`Notification job ${job.id} completed`);
-    });
-
-    // Job failure event
-    job.on('failed', (errorMessage) => {
-      console.log(`Notification job ${job.id} failed: ${errorMessage}`);
-    });
-
-    // Job progress event
-    job.on('progress', (progress) => {
-      console.log(`Notification job ${job.id} ${progress}% complete`);
-    });
+    if (!queue.testMode) {
+      job.on('complete', () => {
+        console.log(`Notification job ${job.id} completed`);
+      }).on('failed', (err) => {
+        console.log(`Notification job ${job.id} failed: ${err}`);
+      }).on('progress', (progress) => {
+        console.log(`Notification job ${job.id} ${progress}% complete`);
+      });
+    }
   });
-}
+};
+
+export default createPushNotificationsJobs;
